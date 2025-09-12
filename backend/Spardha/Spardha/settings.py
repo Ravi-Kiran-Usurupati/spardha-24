@@ -98,8 +98,8 @@ TEMPLATES = [
     },
 ]
 
-AUTH_USER_MODEL = "Spardha.Authentication.UserAccount"
-AUTHENTICATION_BACKENDS = ["Spardha.Authentication.backends.AuthBackend"]
+AUTH_USER_MODEL = "Authentication.UserAccount"
+AUTHENTICATION_BACKENDS = ["Authentication.backends.AuthBackend"]
 WSGI_APPLICATION = "Spardha.wsgi.application"
 
 
