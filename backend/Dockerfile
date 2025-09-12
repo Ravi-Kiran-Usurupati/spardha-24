@@ -23,6 +23,6 @@ RUN pip3 install -r requirements.txt
 
 # run gunicorn
 # CMD gunicorn Spardha.wsgi.application --bind 0.0.0.0:$PORT
-CMD gunicorn Spardha.wsgi.application --bind 0.0.0.0:8000
+CMD gunicorn Spardha.Spardha.wsgi.application --bind 0.0.0.0:8000
 # CMD python Spardha/manage.py runserver $PORT
 #CMD python Spardha/manage.py runserver
