@@ -3,7 +3,7 @@ services:
     name: spardha-backend
     env: docker
     plan: free
-    dockerfilePath: ./backend/Spardha/Dockerfile
+    dockerfilePath: ./backend/Dockerfile
     envVars:
       - key: DJANGO_SETTINGS_MODULE
         value: Spardha.settings
