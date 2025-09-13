@@ -202,17 +202,5 @@ SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
-
-STATICFILES_STORAGE = 'Spardha.storage.IgnoreMissingFilesStorage'
-
-# WHITENOISE_KEEP_ONLY_HASHED_FILES = True
-
-import mimetypes
-mimetypes.add_type("text/css", ".css", True)
-
-
-# # Activate Django-Heroku.
-# django_heroku.settings(locals())
-
-
-
+# Activate Django-Heroku.
+django_heroku.settings(locals())
