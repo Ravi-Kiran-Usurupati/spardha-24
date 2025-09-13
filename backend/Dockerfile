@@ -60,22 +60,27 @@
 FROM python:3.11-slim
 
 ENV PYTHONDONTWRITEBYTECODE=1 PYTHONUNBUFFERED=1
+
+# Set working dir
 WORKDIR /app
 
-# Add build prerequisites for psycopg2 (pg_config comes from libpq-dev)
+# Install psycopg2 dependencies
 RUN apt-get update \
  && apt-get install -y --no-install-recommends build-essential gcc libpq-dev \
  && rm -rf /var/lib/apt/lists/*
 
+# Copy requirements first (from backend folder)
 COPY backend/requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Copy the rest of the backend code
-COPY backend/ ./backend/
+# Copy backend code into /app
+COPY backend/ /app/
 
+# Expose port (Render sets $PORT)
 EXPOSE 8000
 
-WORKDIR /app/backend/Spardha/Spardha
+# Gunicorn command (run from /app, where manage.py lives)
 CMD ["gunicorn", "Spardha.wsgi:application", "--bind", "0.0.0.0:8000"]
+
 
 
