@@ -1,22 +1,60 @@
-databases:
-  - name: spardhadb
-    plan: free
-    databaseName: spardha
-    user: spardha
-
 services:
   - type: web
+    name: spardha-backend
+    env: docker
     plan: free
-    name: spardha
-    runtime: python
-    buildCommand: "./build.sh"
-    startCommand: "python -m gunicorn spardha.asgi:application -k uvicorn.workers.UvicornWorker"
+    dockerfilePath: ./backend/Spardha/Dockerfile
     envVars:
-      - key: DATABASE_URL
-        fromDatabase:
-          name: spardhadb
-          property: connectionString
+      # Core Django settings
+      - key: DJANGO_SETTINGS_MODULE
+        value: Spardha.settings
       - key: SECRET_KEY
         generateValue: true
-      - key: WEB_CONCURRENCY
-        value: 4
+      - key: DEBUG
+        value: False
+      - key: ALLOWED_HOSTS
+        value: spardha.onrender.com,spardha.org.in
+
+      # Database (from Supabase .env)
+      - key: DB_ENGINE
+        value: django.db.backends.postgresql
+      - key: DB_NAME
+        value: postgres
+      - key: DB_USER
+        value: postgres.qoydkyvrrzikqmushubq
+      - key: DB_PASSWORD
+        value: hynduz-0Rugpa-wuvwep
+      - key: DB_HOST
+        value: aws-1-ap-south-1.pooler.supabase.com
+      - key: DB_PORT
+        value: 6543
+
+      # Email / Sendgrid
+      - key: EMAIL_HOST
+        value: rohitdhiman94660@gmail.com
+      - key: EMAIL_PORT
+        value: 587
+      - key: EMAIL_HOST_USER
+        value: rohitdhiman94660@gmail.com
+      - key: EMAIL_HOST_PASSWORD
+        value: hynduz-0Rugpa-wuvwep
+      - key: EMAIL_HOST_USER_NAME
+        value: "Spardha IIT(BHU), Varanasi"
+      - key: SENDGRID_API_KEY
+        value: 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
+      - key: SENDGRID_RESET_ACCOUNT_TEMP_ID
+        value: d-044f72edb7924c0f94f58ee8a623fc93
+      - key: SENDGRID_VERIFY_ACCOUNT_TEMP_ID
+        value: d-a8835324f3e44e7abd0505b6abbefd59
+
+      # Other services
+      - key: PAPERTRAIL_API_TOKEN
+        value: oZSzVnTThSDagUGOIa
+      - key: SERVICE_ACCOUNT_DECRYPT_KEY
+        value: VTVbta+j5!hZ%M8w
+      - key: SPREADSHEET_ID
+        value: 1tH_Gl9acrqgRVCL4AP0VVB5EsY8dWHKdIxsqwaV9QSM
+      - key: DISCORD_WEBHOOK_URL
+        value: https://discord.com/api/webhooks/123456789012345678/abcdefghijklmnopqrstuvwx_yzABCDEFGHIJKLMNOPQRSTUVWX
+
+    postDeployCommand: "python backend/Spardha/Spardha/manage.py migrate && python backend/Spardha/Spardha/manage.py collectstatic --noinput"
