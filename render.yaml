@@ -5,7 +5,6 @@ services:
     plan: free
     dockerfilePath: ./backend/Spardha/Dockerfile
     envVars:
-      # Core Django settings
       - key: DJANGO_SETTINGS_MODULE
         value: Spardha.settings
       - key: SECRET_KEY
@@ -15,7 +14,7 @@ services:
       - key: ALLOWED_HOSTS
         value: spardha.onrender.com,spardha.org.in
 
-      # Database (from Supabase .env)
+      # Database (Supabase connection)
       - key: DB_ENGINE
         value: django.db.backends.postgresql
       - key: DB_NAME
@@ -29,7 +28,7 @@ services:
       - key: DB_PORT
         value: 6543
 
-      # Email / Sendgrid
+      # Email + SendGrid
       - key: EMAIL_HOST
         value: rohitdhiman94660@gmail.com
       - key: EMAIL_PORT
@@ -47,7 +46,7 @@ services:
       - key: SENDGRID_VERIFY_ACCOUNT_TEMP_ID
         value: d-a8835324f3e44e7abd0505b6abbefd59
 
-      # Other services
+      # Other keys
       - key: PAPERTRAIL_API_TOKEN
         value: oZSzVnTThSDagUGOIa
       - key: SERVICE_ACCOUNT_DECRYPT_KEY
@@ -57,4 +56,6 @@ services:
       - key: DISCORD_WEBHOOK_URL
         value: https://discord.com/api/webhooks/123456789012345678/abcdefghijklmnopqrstuvwx_yzABCDEFGHIJKLMNOPQRSTUVWX
 
-    postDeployCommand: "python backend/Spardha/Spardha/manage.py migrate && python backend/Spardha/Spardha/manage.py collectstatic --noinput"
+    postDeployCommand: >
+      python backend/Spardha/Spardha/manage.py migrate &&
+      python backend/Spardha/Spardha/manage.py collectstatic --noinput
