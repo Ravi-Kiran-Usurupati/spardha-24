@@ -203,7 +203,8 @@ SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 
-STATICFILES_STORAGE = "whitenoise.storage.CompressedStaticFilesStorage"
+STATICFILES_STORAGE = 'Spardha.storages.IgnoreMissingFilesStorage'
+
 # WHITENOISE_KEEP_ONLY_HASHED_FILES = True
 
 import mimetypes
