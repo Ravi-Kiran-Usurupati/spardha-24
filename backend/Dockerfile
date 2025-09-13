@@ -68,7 +68,7 @@ COPY backend/requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
 # Copy the rest of the backend code
-COPY . .
+COPY backend/
 
 # Expose port (Render uses 8000 by default)
 EXPOSE 8000
