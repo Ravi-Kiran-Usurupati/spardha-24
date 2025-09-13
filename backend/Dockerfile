@@ -19,11 +19,10 @@ RUN apt-get update && apt-get install -y python3 python3-pip
 RUN pip3 install -r requirements.txt
 
 #Expose the required port
-# EXPOSE 8000
+# EXPOSE 5000
 
 # run gunicorn
 # CMD gunicorn Spardha.wsgi.application --bind 0.0.0.0:$PORT
 # CMD gunicorn Spardha.wsgi.application --bind 0.0.0.0:8000
-CMD gunicorn Spardha.wsgi.application 
 # CMD python Spardha/manage.py runserver $PORT
-#CMD python Spardha/manage.py runserver
+CMD python Spardha/manage.py runserver
