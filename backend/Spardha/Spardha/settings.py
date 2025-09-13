@@ -216,37 +216,42 @@
 
 """
 Django settings for Spardha project.
-Target: Render deploy with WhiteNoise static handling (no django-heroku).
+Target: Render deploy with WhiteNoise static handling for Django 3.2.
 """
+
 import os
 from pathlib import Path
 from decouple import config
+import pyAesCrypt
 
-BASE_DIR = Path(__file__).resolve().parent.parent
+# --------------------------------------------------------------------------------------
+# Paths
+# --------------------------------------------------------------------------------------
+BASE_DIR = Path(__file__).resolve().parent.parent  # e.g. .../backend
 
-# Debug/secret
+# --------------------------------------------------------------------------------------
+# Core
+# --------------------------------------------------------------------------------------
 DEBUG = int(config("DEBUG", "1"))
 SECRET_KEY = (
     config("SECRET_KEY")
     if not DEBUG
     else "django-insecure-86qk#fplrgzvaj&o0nhbgf@^tx)gcg7+9d7#f#%hwsim1p+3ez"
 )
-
 ALLOWED_HOSTS = ["*"]
 
-# CORS
-CORS_ORIGIN_ALLOW_ALL = True
-
+# --------------------------------------------------------------------------------------
 # Apps
+# --------------------------------------------------------------------------------------
 INSTALLED_APPS = [
-    # Django core
+    # Django
     "django.contrib.admin",
     "django.contrib.auth",
     "django.contrib.contenttypes",
     "django.contrib.sessions",
     "django.contrib.messages",
 
-    # WhiteNoise dev helper (place before staticfiles)
+    # WhiteNoise dev helper
     "whitenoise.runserver_nostatic",
 
     "django.contrib.staticfiles",
@@ -267,7 +272,9 @@ INSTALLED_APPS = [
 
 SITE_ID = 1
 
-# Middleware: WhiteNoise must follow SecurityMiddleware
+# --------------------------------------------------------------------------------------
+# Middleware (WhiteNoise must follow SecurityMiddleware)
+# --------------------------------------------------------------------------------------
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
     "whitenoise.middleware.WhiteNoiseMiddleware",
@@ -283,6 +290,9 @@ MIDDLEWARE = [
 
 ROOT_URLCONF = "Spardha.urls"
 
+# --------------------------------------------------------------------------------------
+# Templates
+# --------------------------------------------------------------------------------------
 TEMPLATES = [
     {
         "BACKEND": "django.template.backends.django.DjangoTemplates",
@@ -301,11 +311,16 @@ TEMPLATES = [
 
 WSGI_APPLICATION = "Spardha.wsgi.application"
 
-# Custom auth
+# --------------------------------------------------------------------------------------
+# Auth
+# --------------------------------------------------------------------------------------
 AUTH_USER_MODEL = "Authentication.UserAccount"
 AUTHENTICATION_BACKENDS = ["Authentication.backends.AuthBackend"]
 
-# DRF: avoid browsable API in production to reduce static usage
+# --------------------------------------------------------------------------------------
+# Django REST Framework
+# In production, prefer JSONRenderer only to avoid DRF browsable API static in prod.
+# --------------------------------------------------------------------------------------
 REST_FRAMEWORK = {
     "DEFAULT_AUTHENTICATION_CLASSES": (
         "rest_framework.authentication.TokenAuthentication",
@@ -329,7 +344,15 @@ REST_FRAMEWORK = {
     },
 }
 
+SWAGGER_SETTINGS = {
+    "SECURITY_DEFINITIONS": {
+        "api_key": {"type": "apiKey", "in": "header", "name": "Authorization"}
+    },
+}
+
+# --------------------------------------------------------------------------------------
 # Database
+# --------------------------------------------------------------------------------------
 DATABASES = {
     "default": {
         "ENGINE": config("DB_ENGINE"),
@@ -341,7 +364,9 @@ DATABASES = {
     }
 }
 
-# Password validators
+# --------------------------------------------------------------------------------------
+# Password validation
+# --------------------------------------------------------------------------------------
 AUTH_PASSWORD_VALIDATORS = [
     {"NAME": "django.contrib.auth.password_validation.UserAttributeSimilarityValidator"},
     {"NAME": "django.contrib.auth.password_validation.MinimumLengthValidator"},
@@ -349,27 +374,51 @@ AUTH_PASSWORD_VALIDATORS = [
     {"NAME": "django.contrib.auth.password_validation.NumericPasswordValidator"},
 ]
 
+# --------------------------------------------------------------------------------------
 # i18n
+# --------------------------------------------------------------------------------------
 LANGUAGE_CODE = "en-us"
 TIME_ZONE = "Asia/Kolkata"
 USE_I18N = True
 USE_L10N = True
 USE_TZ = True
 
-# Static files: Render + WhiteNoise
+# --------------------------------------------------------------------------------------
+# Static files (WhiteNoise)
+# Use separate STATIC_ROOT for collected files and a project "static" folder for sources.
+# Make manifest non‑strict to ignore missing sourcemap refs from third-party CSS.
+# --------------------------------------------------------------------------------------
 STATIC_URL = "/static/"
-STATIC_ROOT = BASE_DIR / "staticfiles"  # collectstatic output
-STATICFILES_DIRS = [BASE_DIR / "static"]  # project-level assets (optional)
-
-# WhiteNoise storage: hashed + compressed, but non-strict to ignore missing sourcemap refs
+STATIC_ROOT = BASE_DIR / "staticfiles"
+STATICFILES_DIRS = [BASE_DIR / "static"]  # ensure this directory exists in the repo
 STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
-WHITENOISE_MANIFEST_STRICT = False  # prevents MissingFileError on sourcemap refs
+WHITENOISE_MANIFEST_STRICT = False  # prevents collectstatic abort on missing *.map
 
+# --------------------------------------------------------------------------------------
 # Media
+# --------------------------------------------------------------------------------------
 MEDIA_URL = "/media/"
 MEDIA_ROOT = BASE_DIR / "media"
 
-# Email
+# --------------------------------------------------------------------------------------
+# Decrypt service account file (unchanged)
+# --------------------------------------------------------------------------------------
+enc_path = BASE_DIR / "client_secret.json.aes"
+dec_path = BASE_DIR / "client_secret.json"
+if enc_path.exists():
+    with open(enc_path, "rb") as encrypted_file, open(dec_path, "wb") as decrypted_file:
+        enc_size = os.stat(enc_path).st_size
+        pyAesCrypt.decryptStream(
+            encrypted_file,
+            decrypted_file,
+            config("SERVICE_ACCOUNT_DECRYPT_KEY"),
+            64 * 1024,
+            enc_size,
+        )
+
+# --------------------------------------------------------------------------------------
+# Email / SendGrid
+# --------------------------------------------------------------------------------------
 EMAIL_USE_TLS = True
 EMAIL_HOST = config("EMAIL_HOST")
 EMAIL_PORT = config("EMAIL_PORT")
@@ -381,29 +430,27 @@ EMAIL_HOST_USER_NAME = config("EMAIL_HOST_USER_NAME")
 SENDGRID_RESET_ACCOUNT_TEMP_ID = config("SENDGRID_RESET_ACCOUNT_TEMP_ID")
 EMAIL_HOST_PASSWORD = config("EMAIL_HOST_PASSWORD")
 
+# --------------------------------------------------------------------------------------
 # URLs
+# --------------------------------------------------------------------------------------
 BASE_URL_FRONTEND = config("BASE_URL_FRONTEND")
 CURRENT_URL_BACKEND = config("CURRENT_URL_BACKEND")
 
+# --------------------------------------------------------------------------------------
 # Proxy headers (Render)
+# --------------------------------------------------------------------------------------
 USE_X_FORWARDED_HOST = True
 SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
 
-# Swagger
-SWAGGER_SETTINGS = {
-    "SECURITY_DEFINITIONS": {
-        "api_key": {"type": "apiKey", "in": "header", "name": "Authorization"}
-    },
-}
-
-# Default PK
+# --------------------------------------------------------------------------------------
+# Defaults
+# --------------------------------------------------------------------------------------
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
-# Optional: ensure correct CSS mimetype on some hosts
+# --------------------------------------------------------------------------------------
+# Content types tweak
+# --------------------------------------------------------------------------------------
 import mimetypes
 mimetypes.add_type("text/css", ".css", True)
 
-# NOTE:
-# - Do NOT call: django_heroku.settings(locals())
-#   It's not needed on Render and can override staticfiles storage in ways that break collectstatic.
 
