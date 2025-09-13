@@ -1,16 +1,12 @@
-from whitenoise.storage import CompressedManifestStaticFilesStorage
-from django.contrib.staticfiles.storage import ManifestFilesMixin
+from django.contrib.staticfiles.storage import ManifestStaticFilesStorage
 
-class IgnoreMissingFilesStorage(CompressedManifestStaticFilesStorage):
+class IgnoreMissingFilesStorage(ManifestStaticFilesStorage):
     """
-    Extends CompressedManifestStaticFilesStorage but ignores missing .map files
-    to prevent collectstatic from failing.
+    Custom storage to ignore missing source map files.
     """
     def post_process(self, *args, **kwargs):
         try:
             return super().post_process(*args, **kwargs)
-        except Exception as e:
-            if "MissingFileError" in str(e) and ".map" in str(e):
-                # silently ignore missing .map files
-                return []
-            raise e
+        except ValueError:
+            # ignore missing files
+            return [], True
