@@ -57,21 +57,24 @@
 # # Run Gunicorn server with Django WSGI
 # CMD gunicorn Spardha.wsgi:application --bind 0.0.0.0:$PORT
 
-# Use official Python image
 FROM python:3.11-slim
 
-# Set working directory inside container
+ENV PYTHONDONTWRITEBYTECODE=1 PYTHONUNBUFFERED=1
 WORKDIR /app
 
-# Copy requirements and install
+# Add build prerequisites for psycopg2 (pg_config comes from libpq-dev)
+RUN apt-get update \
+ && apt-get install -y --no-install-recommends build-essential gcc libpq-dev \
+ && rm -rf /var/lib/apt/lists/*
+
 COPY backend/requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
 # Copy the rest of the backend code
-COPY backend/ ./backend
+COPY backend/ ./backend/
 
-# Expose port (Render uses 8000 by default)
 EXPOSE 8000
+
 
 # Run the Django app with Gunicorn
 CMD ["gunicorn", "Spardha.wsgi:application", "--bind", "0.0.0.0:8000"]
