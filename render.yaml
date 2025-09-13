@@ -56,6 +56,4 @@ services:
       - key: DISCORD_WEBHOOK_URL
         value: https://discord.com/api/webhooks/123456789012345678/abcdefghijklmnopqrstuvwx_yzABCDEFGHIJKLMNOPQRSTUVWX
 
-    postDeployCommand: >
-      python backend/Spardha/Spardha/manage.py migrate &&
-      python backend/Spardha/Spardha/manage.py collectstatic --noinput
+
